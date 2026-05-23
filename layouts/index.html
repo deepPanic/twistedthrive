@@ -12,7 +12,11 @@
   </div>
 
   <div class="hero-panel">
-    <div class="kicker">{{ with site.Data.homepage.current_focus }}{{ . }}{{ else }}Current focus{{ end }}</div>
+    <div class="kicker">{{ with site.Data.homepage.spotlight_label }}{{ . }}{{ else }}Now showing{{ end }}</div>
+    <div style="margin-top:0.9rem">
+      <h3 style="margin:0 0 .55rem 0; font-size:1.45rem; line-height:1.2; letter-spacing:-.02em;">{{ with site.Data.homepage.spotlight_title }}{{ . }}{{ else }}No featured exhibition yet{{ end }}</h3>
+      <p class="summary" style="margin:0">{{ with site.Data.homepage.spotlight_copy }}{{ . }}{{ else }}Use this area for a short editorial note about the current exhibition, project, or studio focus.{{ end }}</p>
+    </div>
     <div class="hero-art">
       <div class="art-image"></div>
       <div class="art-slab"></div>

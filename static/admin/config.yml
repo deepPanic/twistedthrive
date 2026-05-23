@@ -18,7 +18,9 @@ collections:
         label: Homepage settings
         name: homepage
         fields:
-          - {label: Current Focus, name: current_focus, widget: string, required: false}
+          - {label: Spotlight Label, name: spotlight_label, widget: string, required: false}
+          - {label: Spotlight Title, name: spotlight_title, widget: string, required: false}
+          - {label: Spotlight Copy, name: spotlight_copy, widget: text, required: false}
           - {label: Intro, name: intro, widget: text, required: false}
 
   - name: exhibitions
