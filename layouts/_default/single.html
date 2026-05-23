@@ -1,12 +1,34 @@
 {{ define "main" }}
-<h1>{{ .Title }}</h1>
-<p class="meta">{{ .Date.Format "January 2, 2006" }}</p>
+<article class="content">
+  <div class="eyebrow">{{ .Section }}</div>
+  <h1>{{ .Title }}</h1>
+  <p class="meta">{{ .Date.Format "January 2, 2006" }}</p>
 
-{{ range .Params.images }}
-  <img src="{{ . }}" alt="{{ $.Title }}" style="width:100%;border:1px solid var(--border);margin:1rem 0">
-{{ end }}
+  {{ with .Params.images }}
+    <section class="gallery">
+      {{ range . }}
+        <figure>
+          <img src="{{ . }}" alt="{{ $.Title }}">
+        </figure>
+      {{ end }}
+    </section>
+  {{ end }}
 
-{{ with .Content }}{{ . }}{{ end }}
+  {{ with .Params.featured_image }}
+    <img class="card-media" src="{{ . }}" alt="{{ $.Title }}">
+  {{ end }}
 
-<p><a class="back-link" href="{{ .Section | relLangURL }}">← All {{ .Section }}</a></p>
+  {{ with .Content }}
+    <div class="content-body">{{ . }}</div>
+  {{ end }}
+
+  {{ $back := "/" }}
+  {{ if eq .Section "blog" }}
+    {{ $back = "/blog/" }}
+  {{ else if eq .Section "exhibitions" }}
+    {{ $back = "/exhibitions/" }}
+  {{ end }}
+
+  <a class="back-link" href="{{ $back | relLangURL }}">← Back</a>
+</article>
 {{ end }}

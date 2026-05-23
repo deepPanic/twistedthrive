@@ -1,29 +1,73 @@
 {{ define "main" }}
-<h1>{{ site.Title }}</h1>
-<div class="meta">{{ site.Params.description }}</div>
+<section class="hero">
+  <div>
+    <div class="eyebrow">Contemporary art / exhibitions / writing</div>
+    <h1>Twisted Thrive</h1>
+    <p class="lede">A dark, minimal space for contemporary art — exhibition notes, journal entries, and commissioned work with a gallery-first layout.</p>
+    <div class="hero-note">
+      <span>New exhibitions</span>
+      <span>Curatorial writing</span>
+      <span>Open for commissions</span>
+    </div>
+  </div>
+
+  <div class="hero-panel">
+    <div class="kicker">Current focus</div>
+    <div class="hero-art">
+      <div class="art-image"></div>
+      <div class="art-slab"></div>
+    </div>
+  </div>
+</section>
 
 {{ $exhibitions := where site.RegularPages "Section" "exhibitions" }}
 {{ $blog := where site.RegularPages "Section" "blog" }}
 
-{{ if $exhibitions }}
-<div class="meta" style="margin-top:2.5rem">Exhibitions</div>
-{{ range $exhibitions }}
-<div class="post-item">
-  <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
-  <p class="meta">{{ .Date.Format "January 2, 2006" }}</p>
-  {{ with .Params.description }}<p>{{ . }}</p>{{ end }}
-</div>
-{{ end }}
-{{ end }}
+<section class="stack">
+  <div class="section-head">
+    <div>
+      <div class="eyebrow">Featured work</div>
+      <h2>Exhibitions</h2>
+    </div>
+    <div class="meta">{{ len $exhibitions }} current entries</div>
+  </div>
 
-{{ if $blog }}
-<div class="meta" style="margin-top:2.5rem">Journal</div>
-{{ range $blog }}
-<div class="post-item">
-  <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
-  <p class="meta">{{ .Date.Format "January 2, 2006" }}</p>
-  <p>{{ .Summary }}</p>
-</div>
-{{ end }}
-{{ end }}
+  <div class="grid">
+    {{ range $exhibitions.ByDate.Reverse }}
+      <article class="card entry-card">
+        <div class="kicker">{{ .Date.Format "Jan 2006" }}</div>
+        <h3><a class="title-link" href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+        {{ with .Params.description }}<p class="summary">{{ . }}</p>{{ end }}
+      </article>
+    {{ else }}
+      <div class="card entry-card">
+        <p class="summary">No exhibitions published yet.</p>
+      </div>
+    {{ end }}
+  </div>
+</section>
+
+<section class="stack" style="margin-top:2.5rem">
+  <div class="section-head">
+    <div>
+      <div class="eyebrow">Writing</div>
+      <h2>Journal</h2>
+    </div>
+    <div class="meta">{{ len $blog }} posts</div>
+  </div>
+
+  <div class="grid">
+    {{ range $blog.ByDate.Reverse }}
+      <article class="card entry-card">
+        <div class="kicker">{{ .Date.Format "Jan 2, 2006" }}</div>
+        <h3><a class="title-link" href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+        <p class="summary">{{ .Summary | plainify }}</p>
+      </article>
+    {{ else }}
+      <div class="card entry-card">
+        <p class="summary">No journal posts published yet.</p>
+      </div>
+    {{ end }}
+  </div>
+</section>
 {{ end }}

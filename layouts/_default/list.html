@@ -1,9 +1,23 @@
 {{ define "main" }}
-<h1>{{ .Title }}</h1>
-{{ with .Params.description }}<div class="meta">{{ . }}</div>{{ end }}
-<div class="exhibition-grid">
-  {{ range .RegularPages }}
-  <a href="{{ .RelPermalink }}"><img src="{{ .Params.image | default "/images/common/placeholder.jpg" }}" alt="{{ .Title }}"></a>
+<div class="section-head">
+  <div>
+    <div class="eyebrow">{{ .Section }}</div>
+    <h1>{{ .Title }}</h1>
+  </div>
+  {{ with .Params.description }}<div class="meta">{{ . }}</div>{{ end }}
+</div>
+
+<div class="grid">
+  {{ range .RegularPages.ByDate.Reverse }}
+    <article class="card entry-card">
+      <div class="kicker">{{ .Date.Format "Jan 2, 2006" }}</div>
+      <h3><a class="title-link" href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+      {{ with .Params.description }}<p class="summary">{{ . }}</p>{{ else }}<p class="summary">{{ .Summary | plainify }}</p>{{ end }}
+    </article>
+  {{ else }}
+    <article class="card entry-card">
+      <p class="summary">Nothing published here yet.</p>
+    </article>
   {{ end }}
 </div>
 {{ end }}

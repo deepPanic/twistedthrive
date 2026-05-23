@@ -5,21 +5,28 @@
 {{ block "style" . }}{{ partial "style.html" . }}{{ end }}
 </head>
 <body>
-<header>
-  <a href="/" class="logo">{{ site.Title }}</a>
-  <nav>
-    {{ $current := . }}
-    {{ range site.Menus.main }}
-      <a href="{{ .URL }}"{{ if $current.HasMenuCurrent "main" . }} class="active"{{ end }}>{{ .Name }}</a>
-    {{ end }}
-  </nav>
-</header>
-<main>
-  {{ block "main" . }}{{ end }}
-</main>
-<footer>
-  <span>© {{ now.Year }} Twisted Thrive</span>
-  <span>twisted-thrive.co.uk</span>
-</footer>
+<div class="frame">
+  <header class="site-header">
+    <div class="brand">
+      <a href="/">{{ site.Title }}</a>
+      <small>Contemporary art space</small>
+    </div>
+    <nav>
+      {{ $current := . }}
+      {{ range site.Menus.main }}
+        <a href="{{ .URL }}"{{ if or ($current.IsMenuCurrent "main" .) ($current.HasMenuCurrent "main" .) }} class="active"{{ end }}>{{ .Name }}</a>
+      {{ end }}
+    </nav>
+  </header>
+
+  <main>
+    {{ block "main" . }}{{ end }}
+  </main>
+
+  <footer>
+    <span>© {{ now.Year }} Twisted Thrive</span>
+    <span>twistedthrive.localh0st.co.uk</span>
+  </footer>
+</div>
 </body>
 </html>
