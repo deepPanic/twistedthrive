@@ -3,7 +3,7 @@
   <div>
     <div class="eyebrow">Contemporary art / exhibitions / writing</div>
     <h1>Twisted Thrive</h1>
-    <p class="lede">A dark, minimal space for contemporary art — exhibition notes, journal entries, and commissioned work with a gallery-first layout.</p>
+    <p class="lede">{{ with site.Data.homepage.intro }}{{ . }}{{ else }}A dark, minimal space for contemporary art — exhibition notes, journal entries, and commissioned work with a gallery-first layout.{{ end }}</p>
     <div class="hero-note">
       <span>New exhibitions</span>
       <span>Curatorial writing</span>
@@ -12,7 +12,7 @@
   </div>
 
   <div class="hero-panel">
-    <div class="kicker">Current focus</div>
+    <div class="kicker">{{ with site.Data.homepage.current_focus }}{{ . }}{{ else }}Current focus{{ end }}</div>
     <div class="hero-art">
       <div class="art-image"></div>
       <div class="art-slab"></div>

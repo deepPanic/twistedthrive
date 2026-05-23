@@ -11,6 +11,16 @@ public_folder: /images
 publish_mode: editorial_workflow
 
 collections:
+  - name: homepage
+    label: Homepage
+    files:
+      - file: data/homepage.toml
+        label: Homepage settings
+        name: homepage
+        fields:
+          - {label: Current Focus, name: current_focus, widget: string, required: false}
+          - {label: Intro, name: intro, widget: text, required: false}
+
   - name: exhibitions
     label: Exhibitions
     folder: content/exhibitions
