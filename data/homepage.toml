@@ -1,4 +1,6 @@
 spotlight_label = "Now showing"
 spotlight_title = "Working Class Collective Exhibition"
 spotlight_copy = "A short note for the current exhibition or project. Keep it to one or two sentences so the homepage feels like a gallery wall text, not a blog post."
+spotlight_image = ""
+detail_image = ""
 intro = "A dark, minimal space for contemporary art — exhibition notes, journal entries, and commissioned work with a gallery-first layout."

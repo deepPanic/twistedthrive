@@ -18,8 +18,12 @@
       <p class="summary" style="margin:0">{{ with site.Data.homepage.spotlight_copy }}{{ . }}{{ else }}Use this area for a short editorial note about the current exhibition, project, or studio focus.{{ end }}</p>
     </div>
     <div class="hero-art">
-      <div class="art-image"></div>
-      <div class="art-slab"></div>
+      <div class="art-image"{{ with site.Data.homepage.spotlight_image }} style="--hero-image:url('{{ . | relURL }}')"{{ end }}>
+        {{ if not site.Data.homepage.spotlight_image }}<span class="art-placeholder">Add a spotlight image in Decap</span>{{ end }}
+      </div>
+      <div class="art-slab"{{ with site.Data.homepage.detail_image }} style="background-image:url('{{ . | relURL }}')"{{ end }}>
+        {{ if not site.Data.homepage.detail_image }}<span class="art-placeholder">Add a detail image in Decap</span>{{ end }}
+      </div>
     </div>
   </div>
 </section>
