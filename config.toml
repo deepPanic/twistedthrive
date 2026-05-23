@@ -14,15 +14,20 @@ enableEmoji = false
     url        = "/exhibitions/"
     weight     = 1
   [[menu.main]]
+    identifier = "gallery"
+    name       = "Gallery"
+    url        = "/gallery/"
+    weight     = 2
+  [[menu.main]]
     identifier = "blog"
     name       = "Journal"
     url        = "/blog/"
-    weight     = 2
+    weight     = 3
   [[menu.main]]
     identifier = "about"
     name       = "About"
     url        = "/about/"
-    weight     = 3
+    weight     = 4
 
 [params]
   description = "Contemporary art, exhibitions & visual experiments"

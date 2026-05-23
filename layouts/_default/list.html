@@ -2,22 +2,63 @@
 <div class="section-head">
   <div>
     <div class="eyebrow">{{ .Section }}</div>
-    <h1>{{ .Title }}</h1>
+    <h1>{{ partial "display-title.html" . }}</h1>
   </div>
   {{ with .Params.description }}<div class="meta">{{ . }}</div>{{ end }}
 </div>
 
 <div class="grid">
-  {{ range .RegularPages.ByDate.Reverse }}
-    <article class="card entry-card">
-      <div class="kicker">{{ .Date.Format "Jan 2, 2006" }}</div>
-      <h3><a class="title-link" href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
-      {{ with .Params.description }}<p class="summary">{{ . }}</p>{{ else }}<p class="summary">{{ .Summary | plainify }}</p>{{ end }}
-    </article>
+  {{ if eq .Section "gallery" }}
+    {{ range .RegularPages }}
+      {{ $title := partial "display-title.html" . }}
+      {{ $previewSrc := "" }}
+      {{ $previewType := "" }}
+      {{ $page := . }}
+      {{ with $page.Params.gallery_items }}
+        {{ with index . 0 }}
+          {{ with $page.Resources.GetMatch (path.Base .media) }}
+            {{ $previewSrc = .RelPermalink }}
+            {{ $previewType = .MediaType.MainType }}
+          {{ else }}
+            {{ $previewSrc = .media | relURL }}
+            {{ $ext := lower (path.Ext .media) }}
+            {{ if or (eq $ext ".mp4") (eq $ext ".webm") (eq $ext ".mov") (eq $ext ".m4v") }}
+              {{ $previewType = "video" }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+      <article class="card entry-card">
+        <div class="gallery-card-preview">
+          {{ if and $previewSrc (eq $previewType "video") }}
+            <video controls playsinline preload="metadata" src="{{ $previewSrc }}"></video>
+          {{ else if $previewSrc }}
+            <img src="{{ $previewSrc }}" alt="{{ $title }}">
+          {{ else }}
+            <div class="gallery-card-placeholder">Add media in Decap</div>
+          {{ end }}
+        </div>
+        <div class="kicker">Gallery</div>
+        <h3><a class="title-link" href="{{ .RelPermalink }}">{{ $title }}</a></h3>
+        {{ with .Params.description }}<p class="summary">{{ . }}</p>{{ else }}<p class="summary">{{ .Summary | plainify }}</p>{{ end }}
+      </article>
+    {{ else }}
+      <article class="card entry-card">
+        <p class="summary">Nothing published here yet.</p>
+      </article>
+    {{ end }}
   {{ else }}
-    <article class="card entry-card">
-      <p class="summary">Nothing published here yet.</p>
-    </article>
+    {{ range .RegularPages.ByDate.Reverse }}
+      <article class="card entry-card">
+        <div class="kicker">{{ .Date.Format "Jan 2, 2006" }}</div>
+        <h3><a class="title-link" href="{{ .RelPermalink }}">{{ partial "display-title.html" . }}</a></h3>
+        {{ with .Params.description }}<p class="summary">{{ . }}</p>{{ else }}<p class="summary">{{ .Summary | plainify }}</p>{{ end }}
+      </article>
+    {{ else }}
+      <article class="card entry-card">
+        <p class="summary">Nothing published here yet.</p>
+      </article>
+    {{ end }}
   {{ end }}
 </div>
 {{ end }}

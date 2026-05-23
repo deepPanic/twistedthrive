@@ -58,3 +58,30 @@ collections:
         fields:
           - {label: Title, name: title, widget: string}
           - {label: Body, name: body, widget: markdown}
+      - file: content/gallery/_index.md
+        label: Gallery Index
+        name: gallery-index
+        fields:
+          - {label: Title, name: title, widget: string}
+          - {label: Description, name: description, widget: text, required: false}
+          - {label: Body, name: body, widget: markdown, required: false}
+
+  - name: gallery
+    label: Gallery
+    folder: content/gallery
+    path: "{{slug}}/index"
+    create: true
+    media_folder: ""
+    public_folder: ""
+    slug: "{{slug}}"
+    fields:
+      - {label: Title, name: title, widget: string, required: false, hint: "Leave blank to use the folder name on the site"}
+      - {label: Description, name: description, widget: text, required: false}
+      - label: Gallery Media
+        name: gallery_items
+        widget: list
+        required: false
+        fields:
+          - {label: Media, name: media, widget: file}
+          - {label: Caption, name: caption, widget: string, required: false}
+      - {label: Body, name: body, widget: markdown, required: false}

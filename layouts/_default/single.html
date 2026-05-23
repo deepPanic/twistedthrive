@@ -1,25 +1,57 @@
 {{ define "main" }}
-<article class="content">
+{{ $title := partial "display-title.html" . }}
+<article class="content content-page{{ if eq .Section "gallery" }} gallery-page{{ end }}">
   <div class="eyebrow">{{ .Section }}</div>
-  <h1>{{ .Title }}</h1>
-  <p class="meta">{{ .Date.Format "January 2, 2006" }}</p>
-
-  {{ with .Params.images }}
-    <section class="gallery">
-      {{ range . }}
-        <figure>
-          <img src="{{ . }}" alt="{{ $.Title }}">
-        </figure>
-      {{ end }}
-    </section>
-  {{ end }}
-
-  {{ with .Params.featured_image }}
-    <img class="card-media" src="{{ . }}" alt="{{ $.Title }}">
-  {{ end }}
+  <h1>{{ $title }}</h1>
+  {{ with .Params.description }}<p class="lede">{{ . }}</p>{{ end }}
 
   {{ with .Content }}
     <div class="content-body">{{ . }}</div>
+  {{ end }}
+
+  {{ if eq .Section "gallery" }}
+    {{ with .Params.gallery_items }}
+      <section class="gallery gallery-media">
+        {{ range . }}
+          {{ $resource := $.Resources.GetMatch (path.Base .media) }}
+          {{ $src := .media | relURL }}
+          {{ $kind := "image" }}
+          {{ if $resource }}
+            {{ $src = $resource.RelPermalink }}
+            {{ $kind = $resource.MediaType.MainType }}
+          {{ else }}
+            {{ $ext := lower (path.Ext .media) }}
+            {{ if or (eq $ext ".mp4") (eq $ext ".webm") (eq $ext ".mov") (eq $ext ".m4v") }}
+              {{ $kind = "video" }}
+            {{ end }}
+          {{ end }}
+          <figure>
+            {{ if eq $kind "video" }}
+              <video controls playsinline preload="metadata" src="{{ $src }}"></video>
+            {{ else }}
+              <img src="{{ $src }}" alt="{{ $title }}">
+            {{ end }}
+            {{ with .caption }}<figcaption>{{ . }}</figcaption>{{ end }}
+          </figure>
+        {{ end }}
+      </section>
+    {{ else }}
+      <div class="card media-hint">Add media items in Decap to populate this gallery page.</div>
+    {{ end }}
+  {{ else }}
+    {{ with .Params.images }}
+      <section class="gallery">
+        {{ range . }}
+          <figure>
+            <img src="{{ . }}" alt="{{ $title }}">
+          </figure>
+        {{ end }}
+      </section>
+    {{ end }}
+
+    {{ with .Params.featured_image }}
+      <img class="card-media" src="{{ . }}" alt="{{ $title }}">
+    {{ end }}
   {{ end }}
 
   {{ $back := "/" }}
@@ -27,6 +59,8 @@
     {{ $back = "/blog/" }}
   {{ else if eq .Section "exhibitions" }}
     {{ $back = "/exhibitions/" }}
+  {{ else if eq .Section "gallery" }}
+    {{ $back = "/gallery/" }}
   {{ end }}
 
   <a class="back-link" href="{{ $back | relLangURL }}">← Back</a>

@@ -1,0 +1,5 @@
+{{- $title := .Title -}}
+{{- if not $title -}}
+  {{- $title = path.Base .File.Dir | replaceRE "-" " " | title -}}
+{{- end -}}
+{{- $title -}}
