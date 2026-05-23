@@ -6,6 +6,7 @@ description: A layered abstract composition exploring how memory changes over
 gallery_items:
   - media: chatgpt-image-may-23-2026-06_10_42-pm.png
   - media: https://whitewall.art/wp-content/uploads/2018/04/2.jpg
+  - media: 6176556-uhd_4096_2160_24fps.mp4
 ---
 
 Experience is a virtue. I decontextualize, and then I reconstruct. My photography looks past the obvious, relying on close observation and engagement with my subjects. Viewing my work puts you inside a moment, allowing you to experience the laughter, sadness, confusion, and bliss shared in a single expression. I aim to elevate the overlooked, inviting the audience to see their ordinary lives in a completely new light.
