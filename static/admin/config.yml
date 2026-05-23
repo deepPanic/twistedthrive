@@ -3,7 +3,7 @@ backend:
   repo: deepPanic/twistedthrive
   branch: main
   base_url: https://thrive.localh0st.co.uk
-  auth_endpoint: /oauth/auth
+  auth_endpoint: oauth/auth
 
 site_url: https://thrive.localh0st.co.uk
 media_folder: static/images
