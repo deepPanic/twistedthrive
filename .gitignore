@@ -1,0 +1,4 @@
+.hugo_build.lock
+.placeholder-carrier
+admin/
+static/admin/decap-cms.js

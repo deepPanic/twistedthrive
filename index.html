@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ block "title" . }}Latest — Twisted Thrive{{ end }}</title>
+  <style>
+    :root {
+      --bg: #0a0a0a; --text: #f0ece4; --accent: #c09a5e;
+      --muted: #555; --width: 960px; --border: #222;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text);
+      font-family: 'Georgia','Times New Roman',serif; line-height: 1.75;
+      margin: 0; padding: 0;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    header { max-width: var(--width); margin: 2.5rem auto 0; padding: 0 1.5rem;
+      display: flex; align-items: baseline; justify-content: space-between;
+      border-bottom: 1px solid var(--border); padding-bottom: 1rem;
+    }
+    header .logo { font-size: 1.25rem; font-weight: normal; letter-spacing: .04em; color: var(--text); text-decoration: none; }
+    nav a { color: var(--muted); margin-left: 1.5rem; font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; }
+    nav a:hover { color: var(--text); text-decoration: none; }
+
+    main { max-width: var(--width); margin: 2rem auto; padding: 0 1.5rem; min-height: 60vh; }
+
+    h1 { font-size: 2.5rem; font-weight: normal; margin: 0 0 1rem;
+      line-height: 1.2; color: var(--text);
+    }
+    .section-label { color: var(--accent); font-size: .75rem;
+      text-transform: uppercase; letter-spacing: .12em; margin: 3rem 0 1rem;
+    }
+    .post-item { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+    .post-item h2 { font-size: 1.4rem; font-weight: normal; margin: 0 0 .4rem; }
+    .post-item h2 a { color: var(--text); }
+    .post-item h2 a:hover { color: var(--accent); text-decoration: none; }
+
+    footer { max-width: var(--width); margin: 4rem auto 2rem; padding: 0 1.5rem;
+      border-top: 1px solid var(--border); padding-top: 1.5rem;
+      font-size: .78rem; color: var(--muted); display: flex; justify-content: space-between;
+    }
+
+    @media(max-width:600px) { header { flex-direction: column; gap: .75rem; } nav a { margin-left:0; margin-right:1rem; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="logo">Twisted Thrive</a>
+  <nav>
+    <a href="/exhibitions/">Exhibitions</a>
+    <a href="/blog/">Journal</a>
+    <a href="/about/">About</a>
+  </nav>
+</header>
+
+<main>
+  <h1>{{ .Site.Title }}</h1>
+
+  <div class="section-label">Exhibitions</div>
+  {{ range (where .Site.RegularPages "Type" "exhibitions") }}
+  <div class="post-item">
+    <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+    <p class="meta">{{ .Date.Format "January 2, 2006" }}</p>
+  </div>
+  {{ end }}
+
+  <div class="section-label">Journal</div>
+  {{ range (where .Site.RegularPages "Type" "blog") }}
+  <div class="post-item">
+    <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+    <p class="meta">{{ .Date.Format "January 2, 2006" }}</p>
+  </div>
+  {{ end }}
+</main>
+
+<footer>
+  <span>© {{ now.Year }} Twisted Thrive</span>
+  <span>twisted-thrive.co.uk</span>
+</footer>
+
+</body>
+</html>

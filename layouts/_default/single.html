@@ -1,0 +1,12 @@
+{{ define "main" }}
+<h1>{{ .Title }}</h1>
+<p class="meta">{{ .Date.Format "January 2, 2006" }}</p>
+
+{{ range .Params.images }}
+  <img src="{{ . }}" alt="{{ $.Title }}" style="width:100%;border:1px solid var(--border);margin:1rem 0">
+{{ end }}
+
+{{ with .Content }}{{ . }}{{ end }}
+
+<p><a class="back-link" href="{{ .Section | relLangURL }}">← All {{ .Section }}</a></p>
+{{ end }}

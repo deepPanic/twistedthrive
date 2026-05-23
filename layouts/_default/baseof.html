@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ block "title" . }}{{ .Title }} — Twisted Thrive{{ end }}</title>
+{{ block "style" . }}{{ partial "style.html" . }}{{ end }}
+</head>
+<body>
+<header>
+  <a href="/" class="logo">{{ site.Title }}</a>
+  <nav>
+    {{ $current := . }}
+    {{ range site.Menus.main }}
+      <a href="{{ .URL }}"{{ if $current.HasMenuCurrent "main" . }} class="active"{{ end }}>{{ .Name }}</a>
+    {{ end }}
+  </nav>
+</header>
+<main>
+  {{ block "main" . }}{{ end }}
+</main>
+<footer>
+  <span>© {{ now.Year }} Twisted Thrive</span>
+  <span>twisted-thrive.co.uk</span>
+</footer>
+</body>
+</html>

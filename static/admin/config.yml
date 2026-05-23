@@ -1,0 +1,45 @@
+backend:
+  name: github
+  repo: deepPanic/twistedthrive
+  branch: main
+  base_url: https://thrive.localh0st.co.uk
+  auth_endpoint: oauth/auth
+
+site_url: https://thrive.localh0st.co.uk
+media_folder: "quickstart/static/images"
+public_folder: "/images"
+publish_mode: editorial_workflow
+
+collections:
+  - name: exhibitions
+    label: Exhibitions
+    folder: quickstart/content/exhibitions
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: Title, name: title, widget: string}
+      - {label: Exhibition Date, name: date, widget: date}
+      - {label: Featured Image, name: featured_image, widget: image, required: false}
+      - {label: Gallery Images, name: images, widget: list, field: {label: Image, name: image, widget: image}, required: false}
+      - {label: Body, name: body, widget: markdown}
+
+  - name: blog
+    label: Journal
+    folder: quickstart/content/blog
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: Title, name: title, widget: string}
+      - {label: Publish Date, name: date, widget: date}
+      - {label: Featured Image, name: featured_image, widget: image, required: false}
+      - {label: Body, name: body, widget: markdown}
+
+  - name: pages
+    label: Pages
+    files:
+      - file: quickstart/content/about.md
+        label: About
+        name: about
+        fields:
+          - {label: Title, name: title, widget: string}
+          - {label: Body, name: body, widget: markdown}

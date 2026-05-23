@@ -1,0 +1,9 @@
+{{ define "main" }}
+<h1>{{ .Title }}</h1>
+{{ with .Params.description }}<div class="meta">{{ . }}</div>{{ end }}
+<div class="exhibition-grid">
+  {{ range .RegularPages }}
+  <a href="{{ .RelPermalink }}"><img src="{{ .Params.image | default "/images/common/placeholder.jpg" }}" alt="{{ .Title }}"></a>
+  {{ end }}
+</div>
+{{ end }}

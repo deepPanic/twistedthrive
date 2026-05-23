@@ -1,0 +1,28 @@
+baseURL         = "https://twistedthrive.localh0st.co.uk"
+languageCode    = "en"
+title           = "Twisted Thrive"
+
+enableEmoji = false
+
+[build]
+  publishFuture = true
+
+[menu]
+  [[menu.main]]
+    identifier = "exhibitions"
+    name       = "Exhibitions"
+    url        = "/exhibitions/"
+    weight     = 1
+  [[menu.main]]
+    identifier = "blog"
+    name       = "Journal"
+    url        = "/blog/"
+    weight     = 2
+  [[menu.main]]
+    identifier = "about"
+    name       = "About"
+    url        = "/about/"
+    weight     = 3
+
+[params]
+  description = "Contemporary art, exhibitions & visual experiments"

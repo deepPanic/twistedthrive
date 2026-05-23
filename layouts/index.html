@@ -1,0 +1,29 @@
+{{ define "main" }}
+<h1>{{ site.Title }}</h1>
+<div class="meta">{{ site.Params.description }}</div>
+
+{{ $exhibitions := where site.RegularPages "Section" "exhibitions" }}
+{{ $blog := where site.RegularPages "Section" "blog" }}
+
+{{ if $exhibitions }}
+<div class="meta" style="margin-top:2.5rem">Exhibitions</div>
+{{ range $exhibitions }}
+<div class="post-item">
+  <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+  <p class="meta">{{ .Date.Format "January 2, 2006" }}</p>
+  {{ with .Params.description }}<p>{{ . }}</p>{{ end }}
+</div>
+{{ end }}
+{{ end }}
+
+{{ if $blog }}
+<div class="meta" style="margin-top:2.5rem">Journal</div>
+{{ range $blog }}
+<div class="post-item">
+  <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+  <p class="meta">{{ .Date.Format "January 2, 2006" }}</p>
+  <p>{{ .Summary }}</p>
+</div>
+{{ end }}
+{{ end }}
+{{ end }}
