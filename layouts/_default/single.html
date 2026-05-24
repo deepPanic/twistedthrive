@@ -11,32 +11,104 @@
 
   {{ if eq .Section "gallery" }}
     {{ with .Params.gallery_items }}
+      <p class="media-instructions">Tap or click media to open larger. Use arrow keys or swipe to move through the set; double-click or pinch images to zoom.</p>
       <section class="gallery gallery-media">
-        {{ range . }}
-          {{ $resource := $.Resources.GetMatch (path.Base .media) }}
-          {{ $src := .media | relURL }}
+        {{ range $index, $item := . }}
+          {{ $resource := $.Resources.GetMatch (path.Base $item.media) }}
+          {{ $src := $item.media | relURL }}
           {{ $kind := "image" }}
+          {{ $itemTitle := $item.title | default $title }}
+          {{ $itemAlt := $item.alt | default $itemTitle }}
+          {{ $modalCaption := $item.caption | default $itemTitle }}
           {{ if $resource }}
             {{ $src = $resource.RelPermalink }}
             {{ $kind = $resource.MediaType.MainType }}
           {{ else }}
-            {{ $ext := lower (path.Ext .media) }}
+            {{ $ext := lower (path.Ext $item.media) }}
             {{ if or (eq $ext ".mp4") (eq $ext ".webm") (eq $ext ".mov") (eq $ext ".m4v") }}
               {{ $kind = "video" }}
             {{ end }}
           {{ end }}
-          <figure>
-            {{ if eq $kind "video" }}
-              <video controls playsinline preload="metadata" src="{{ $src }}"></video>
-            {{ else }}
-              <img src="{{ $src }}" alt="{{ $title }}">
+          <figure{{ if eq $kind "image" }} class="lightbox-item"{{ else }} class="lightbox-item lightbox-item-video"{{ end }}>
+            <button type="button" class="lightbox-trigger{{ if eq $kind "video" }} lightbox-trigger-video{{ end }}" data-lightbox-index="{{ $index }}" data-lightbox-type="{{ $kind }}" data-lightbox-src="{{ $src }}" data-lightbox-alt="{{ $itemAlt }}" data-lightbox-caption="{{ $modalCaption }}" aria-label="Open {{ $itemAlt }}">
+              {{ if eq $kind "video" }}
+                <video muted playsinline preload="metadata" src="{{ $src }}" aria-hidden="true"></video>
+                <span class="lightbox-hint">Open video</span>
+              {{ else }}
+                <img src="{{ $src }}" alt="{{ $itemAlt }}" loading="lazy">
+                <span class="lightbox-hint">Open larger</span>
+              {{ end }}
+            </button>
+            {{ if or $item.title $item.year $item.medium $item.dimensions $item.caption }}
+              <figcaption>
+                {{ with $item.title }}<strong>{{ . }}</strong>{{ end }}
+                {{ with $item.year }}<span>{{ . }}</span>{{ end }}
+                {{ with $item.medium }}<span>{{ . }}</span>{{ end }}
+                {{ with $item.dimensions }}<span>{{ . }}</span>{{ end }}
+                {{ with $item.caption }}<span>{{ . }}</span>{{ end }}
+              </figcaption>
             {{ end }}
-            {{ with .caption }}<figcaption>{{ . }}</figcaption>{{ end }}
           </figure>
         {{ end }}
       </section>
     {{ else }}
       <div class="card media-hint">Add media items in Decap to populate this gallery page.</div>
+    {{ end }}
+  {{ else if eq .Section "exhibitions" }}
+    {{ if or .Params.featured_image .Params.images }}
+      <p class="media-instructions">Tap or click media to open larger. Use arrow keys or swipe to move through the set; double-click or pinch images to zoom.</p>
+    {{ end }}
+    {{ $lightboxIndex := 0 }}
+    {{ with .Params.featured_image }}
+      {{ $src := . | relURL }}
+      {{ $kind := "image" }}
+      {{ $ext := lower (path.Ext .) }}
+      {{ if or (eq $ext ".mp4") (eq $ext ".webm") (eq $ext ".mov") (eq $ext ".m4v") }}
+        {{ $kind = "video" }}
+      {{ end }}
+      <section class="gallery exhibition-media">
+        <figure class="lightbox-item exhibition-featured">
+          <button type="button" class="lightbox-trigger" data-lightbox-index="{{ $lightboxIndex }}" data-lightbox-type="{{ $kind }}" data-lightbox-src="{{ $src }}" data-lightbox-alt="{{ $title }}" data-lightbox-caption="Featured image — {{ $title }}">
+            {{ if eq $kind "video" }}
+              <video muted playsinline preload="metadata" src="{{ $src }}" aria-hidden="true"></video>
+              <span class="lightbox-hint">Open video</span>
+            {{ else }}
+              <img src="{{ $src }}" alt="{{ $title }}" loading="lazy">
+              <span class="lightbox-hint">Open larger</span>
+            {{ end }}
+          </button>
+        </figure>
+      </section>
+      {{ $lightboxIndex = add $lightboxIndex 1 }}
+    {{ end }}
+
+    {{ with .Params.images }}
+      <section class="gallery exhibition-media">
+        {{ range . }}
+          {{ $src := . | relURL }}
+          {{ $kind := "image" }}
+          {{ $ext := lower (path.Ext .) }}
+          {{ if or (eq $ext ".mp4") (eq $ext ".webm") (eq $ext ".mov") (eq $ext ".m4v") }}
+            {{ $kind = "video" }}
+          {{ end }}
+          <figure class="lightbox-item">
+            <button type="button" class="lightbox-trigger" data-lightbox-index="{{ $lightboxIndex }}" data-lightbox-type="{{ $kind }}" data-lightbox-src="{{ $src }}" data-lightbox-alt="{{ $title }}" data-lightbox-caption="{{ $title }}">
+              {{ if eq $kind "video" }}
+                <video muted playsinline preload="metadata" src="{{ $src }}" aria-hidden="true"></video>
+                <span class="lightbox-hint">Open video</span>
+              {{ else }}
+                <img src="{{ $src }}" alt="{{ $title }}" loading="lazy">
+                <span class="lightbox-hint">Open larger</span>
+              {{ end }}
+            </button>
+          </figure>
+          {{ $lightboxIndex = add $lightboxIndex 1 }}
+        {{ end }}
+      </section>
+    {{ else }}
+      {{ if not .Params.featured_image }}
+        <div class="card media-hint">Add images in Decap to populate this exhibition page.</div>
+      {{ end }}
     {{ end }}
   {{ else }}
     {{ with .Params.images }}
@@ -55,8 +127,8 @@
   {{ end }}
 
   {{ $back := "/" }}
-  {{ if eq .Section "blog" }}
-    {{ $back = "/blog/" }}
+  {{ if eq .Section "journal" }}
+    {{ $back = "/journal/" }}
   {{ else if eq .Section "exhibitions" }}
     {{ $back = "/exhibitions/" }}
   {{ else if eq .Section "gallery" }}

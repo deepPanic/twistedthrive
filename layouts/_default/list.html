@@ -1,8 +1,7 @@
 {{ define "main" }}
 <div class="section-head">
   <div>
-    <div class="eyebrow">{{ .Section }}</div>
-    <h1>{{ partial "display-title.html" . }}</h1>
+    <h1>{{ partial "section-title.html" . }}</h1>
   </div>
   {{ with .Params.description }}<div class="meta">{{ . }}</div>{{ end }}
 </div>
@@ -29,16 +28,61 @@
         {{ end }}
       {{ end }}
       <article class="card entry-card">
-        <div class="gallery-card-preview">
-          {{ if and $previewSrc (eq $previewType "video") }}
-            <video controls playsinline preload="metadata" src="{{ $previewSrc }}"></video>
-          {{ else if $previewSrc }}
-            <img src="{{ $previewSrc }}" alt="{{ $title }}">
-          {{ else }}
-            <div class="gallery-card-placeholder">Add media in Decap</div>
+        <a class="gallery-card-link" href="{{ .RelPermalink }}" aria-label="Open {{ $title }}">
+          <div class="gallery-card-preview">
+            {{ if and $previewSrc (eq $previewType "video") }}
+              <video muted playsinline autoplay loop preload="metadata" src="{{ $previewSrc }}" aria-hidden="true"></video>
+            {{ else if $previewSrc }}
+              <img src="{{ $previewSrc }}" alt="{{ $title }}">
+            {{ else }}
+              <div class="gallery-card-placeholder">Add media in Decap</div>
+            {{ end }}
+          </div>
+        </a>
+        <div class="kicker">Studio work</div>
+        <h3><a class="title-link" href="{{ .RelPermalink }}">{{ $title }}</a></h3>
+        {{ with .Params.description }}<p class="summary">{{ . }}</p>{{ else }}<p class="summary">{{ .Summary | plainify }}</p>{{ end }}
+      </article>
+    {{ else }}
+      <article class="card entry-card">
+        <p class="summary">Nothing published here yet.</p>
+      </article>
+    {{ end }}
+  {{ else if eq .Section "exhibitions" }}
+    {{ range .RegularPages.ByDate.Reverse }}
+      {{ $title := partial "display-title.html" . }}
+      {{ $previewSrc := "" }}
+      {{ $previewType := "" }}
+      {{ if .Params.featured_image }}
+        {{ $previewSrc = .Params.featured_image | relURL }}
+        {{ $ext := lower (path.Ext .Params.featured_image) }}
+        {{ if or (eq $ext ".mp4") (eq $ext ".webm") (eq $ext ".mov") (eq $ext ".m4v") }}
+          {{ $previewType = "video" }}
+        {{ end }}
+      {{ else }}
+        {{ with .Params.images }}
+          {{ with index . 0 }}
+            {{ $previewSrc = . | relURL }}
+            {{ $ext := lower (path.Ext .) }}
+            {{ if or (eq $ext ".mp4") (eq $ext ".webm") (eq $ext ".mov") (eq $ext ".m4v") }}
+              {{ $previewType = "video" }}
+            {{ end }}
           {{ end }}
-        </div>
-        <div class="kicker">Gallery</div>
+        {{ end }}
+      {{ end }}
+      <article class="card entry-card">
+        {{ if $previewSrc }}
+          <a class="gallery-card-link" href="{{ .RelPermalink }}" aria-label="Open {{ $title }}">
+            <div class="gallery-card-preview exhibition-card-preview">
+              {{ if eq $previewType "video" }}
+                <video muted playsinline autoplay loop preload="metadata" src="{{ $previewSrc }}" aria-hidden="true"></video>
+              {{ else }}
+                <img src="{{ $previewSrc }}" alt="{{ $title }}">
+              {{ end }}
+            </div>
+          </a>
+        {{ end }}
+        <div class="kicker">{{ .Date.Format "Jan 2, 2006" }}</div>
         <h3><a class="title-link" href="{{ .RelPermalink }}">{{ $title }}</a></h3>
         {{ with .Params.description }}<p class="summary">{{ . }}</p>{{ else }}<p class="summary">{{ .Summary | plainify }}</p>{{ end }}
       </article>

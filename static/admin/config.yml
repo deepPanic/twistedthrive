@@ -27,6 +27,8 @@ collections:
 
   - name: exhibitions
     label: Exhibitions
+    label_singular: Exhibition
+    description: Shows, visits, collaborations, and contexts the artist is involved in or documenting.
     folder: content/exhibitions
     create: true
     slug: "{{slug}}"
@@ -38,9 +40,9 @@ collections:
       - {label: Gallery Images, name: images, widget: list, field: {label: Image, name: image, widget: image}, required: false}
       - {label: Body, name: body, widget: markdown}
 
-  - name: blog
+  - name: journal
     label: Journal
-    folder: content/blog
+    folder: content/journal
     create: true
     slug: "{{slug}}"
     fields:
@@ -68,6 +70,8 @@ collections:
 
   - name: gallery
     label: Gallery
+    label_singular: Work / series
+    description: Artist's own work and image/video series. Create one folder page per work, series, or archive grouping.
     folder: content/gallery
     path: "{{slug}}/index"
     create: true
@@ -81,7 +85,13 @@ collections:
         name: gallery_items
         widget: list
         required: false
+        summary: "{{fields.title}} {{fields.year}} — {{fields.media}}"
         fields:
           - {label: Media, name: media, widget: file}
-          - {label: Caption, name: caption, widget: string, required: false}
+          - {label: Artwork/item title, name: title, widget: string, required: false}
+          - {label: Year, name: year, widget: string, required: false}
+          - {label: Medium, name: medium, widget: string, required: false, hint: "Example: Oil on canvas, digital image, video, installation detail"}
+          - {label: Dimensions, name: dimensions, widget: string, required: false}
+          - {label: Alt text, name: alt, widget: string, required: false, hint: "Short visual description for accessibility"}
+          - {label: Caption/note, name: caption, widget: string, required: false}
       - {label: Body, name: body, widget: markdown, required: false}

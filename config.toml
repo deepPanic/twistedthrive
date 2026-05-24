@@ -19,9 +19,9 @@ enableEmoji = false
     url        = "/gallery/"
     weight     = 2
   [[menu.main]]
-    identifier = "blog"
+    identifier = "journal"
     name       = "Journal"
-    url        = "/blog/"
+    url        = "/journal/"
     weight     = 3
   [[menu.main]]
     identifier = "about"

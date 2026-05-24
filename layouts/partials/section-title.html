@@ -1,0 +1,9 @@
+{{- if eq .Section "journal" -}}
+Journal
+{{- else if eq .Section "gallery" -}}
+Gallery
+{{- else if eq .Section "exhibitions" -}}
+Exhibitions
+{{- else -}}
+{{- partial "display-title.html" . -}}
+{{- end -}}

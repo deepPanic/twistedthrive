@@ -1,7 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{{ block "title" . }}{{ .Title }} — Twisted Thrive{{ end }}</title>
+<head>
+{{- $siteTitle := site.Title -}}
+{{- $pageTitle := .Title -}}
+{{- if .IsHome -}}
+  {{- $pageTitle = $siteTitle -}}
+{{- else if not $pageTitle -}}
+  {{- $pageTitle = partial "display-title.html" . -}}
+{{- end -}}
+{{- $titleText := cond .IsHome $siteTitle (printf "%s — %s" $pageTitle $siteTitle) -}}
+{{- $description := site.Params.description | default "Contemporary art, exhibitions, writing, and visual research." -}}
+{{- with .Params.description -}}{{- $description = . -}}{{- else -}}{{- with .Summary -}}{{- $description = . | plainify | truncate 160 -}}{{- end -}}{{- end -}}
+{{- $image := "" -}}
+{{- with .Params.featured_image -}}{{- $image = . -}}{{- else -}}{{- if .IsHome -}}{{- with site.Data.homepage.spotlight_image -}}{{- $image = . -}}{{- end -}}{{- end -}}{{- end -}}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ $titleText }}</title>
+<meta name="description" content="{{ $description }}">
+<link rel="canonical" href="{{ .Permalink }}">
+<meta property="og:site_name" content="{{ $siteTitle }}">
+<meta property="og:title" content="{{ $titleText }}">
+<meta property="og:description" content="{{ $description }}">
+<meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+<meta property="og:url" content="{{ .Permalink }}">
+{{ with $image }}<meta property="og:image" content="{{ . | absURL }}">{{ end }}
+<meta name="twitter:card" content="{{ if $image }}summary_large_image{{ else }}summary{{ end }}">
+<meta name="twitter:title" content="{{ $titleText }}">
+<meta name="twitter:description" content="{{ $description }}">
 {{ block "style" . }}{{ partial "style.html" . }}{{ end }}
 </head>
 <body>
@@ -28,5 +53,353 @@
     <span>thrive.localh0st.co.uk</span>
   </footer>
 </div>
+
+<div class="lightbox" aria-hidden="true" hidden>
+  <div class="lightbox-backdrop" data-lightbox-close></div>
+  <figure class="lightbox-dialog" role="dialog" aria-modal="true" aria-label="Media preview">
+    <div class="lightbox-topbar">
+      <div class="lightbox-counter" aria-live="polite"></div>
+      <button type="button" class="lightbox-close" data-lightbox-close aria-label="Close preview">×</button>
+    </div>
+    <div class="lightbox-stage" aria-live="polite"></div>
+    <div class="lightbox-toolbar">
+      <button type="button" class="lightbox-nav lightbox-prev" data-lightbox-prev aria-label="Previous item">‹ Previous</button>
+      <figcaption class="lightbox-caption"></figcaption>
+      <button type="button" class="lightbox-nav lightbox-next" data-lightbox-next aria-label="Next item">Next ›</button>
+    </div>
+    <p class="lightbox-help">Arrow keys or swipe to move · double-click or pinch to zoom images · Esc closes</p>
+  </figure>
+</div>
+
+<script>
+(() => {
+  const modal = document.querySelector('.lightbox');
+  if (!modal) return;
+
+  const stage = modal.querySelector('.lightbox-stage');
+  const cap = modal.querySelector('.lightbox-caption');
+  const counter = modal.querySelector('.lightbox-counter');
+  const triggers = Array.from(document.querySelectorAll('.lightbox-trigger'));
+  const closeEls = modal.querySelectorAll('[data-lightbox-close]');
+  const prevBtn = modal.querySelector('[data-lightbox-prev]');
+  const nextBtn = modal.querySelector('[data-lightbox-next]');
+  const dialog = modal.querySelector('.lightbox-dialog');
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+  const state = {
+    currentIndex: -1,
+    zoom: 1,
+    panX: 0,
+    panY: 0,
+    shell: null,
+    mediaType: 'image',
+    dragPointerId: null,
+    dragStart: null,
+    pinchStart: null,
+    pointers: new Map(),
+    lastTrigger: null,
+  };
+
+  const renderCounter = () => {
+    counter.textContent = state.currentIndex >= 0 ? `${state.currentIndex + 1} / ${triggers.length}` : '';
+  };
+
+  const setNavState = () => {
+    const hasPrev = state.currentIndex > 0;
+    const hasNext = state.currentIndex >= 0 && state.currentIndex < triggers.length - 1;
+    prevBtn.hidden = !hasPrev;
+    nextBtn.hidden = !hasNext;
+    prevBtn.disabled = !hasPrev;
+    nextBtn.disabled = !hasNext;
+  };
+
+  const clearStage = () => {
+    stage.replaceChildren();
+    state.shell = null;
+    state.mediaType = 'image';
+    state.zoom = 1;
+    state.panX = 0;
+    state.panY = 0;
+    state.dragPointerId = null;
+    state.dragStart = null;
+    state.pinchStart = null;
+    state.pointers.clear();
+  };
+
+  const applyZoom = () => {
+    if (!state.shell) return;
+    state.shell.style.setProperty('--zoom', state.zoom.toFixed(4));
+    state.shell.style.setProperty('--pan-x', `${state.panX.toFixed(1)}px`);
+    state.shell.style.setProperty('--pan-y', `${state.panY.toFixed(1)}px`);
+    state.shell.classList.toggle('is-zoomed', state.zoom > 1.01);
+  };
+
+  const clampPan = () => {
+    if (!state.shell) return;
+    const rect = state.shell.getBoundingClientRect();
+    const maxX = Math.max(0, (rect.width * (state.zoom - 1)) / 2);
+    const maxY = Math.max(0, (rect.height * (state.zoom - 1)) / 2);
+    state.panX = clamp(state.panX, -maxX, maxX);
+    state.panY = clamp(state.panY, -maxY, maxY);
+  };
+
+  const zoomAt = (nextZoom, clientX, clientY) => {
+    if (!state.shell) return;
+    const rect = state.shell.getBoundingClientRect();
+    const prevZoom = state.zoom;
+    const ratio = nextZoom / prevZoom;
+    const offsetX = clientX - (rect.left + rect.width / 2);
+    const offsetY = clientY - (rect.top + rect.height / 2);
+    state.panX += offsetX * (1 - ratio);
+    state.panY += offsetY * (1 - ratio);
+    state.zoom = nextZoom;
+    clampPan();
+    applyZoom();
+  };
+
+  const open = (index) => {
+    const trigger = triggers[index];
+    if (!trigger) return;
+
+    state.currentIndex = index;
+    state.lastTrigger = trigger;
+    const type = trigger.dataset.lightboxType || 'image';
+    const src = trigger.dataset.lightboxSrc;
+    const alt = trigger.dataset.lightboxAlt;
+    const caption = trigger.dataset.lightboxCaption;
+
+    clearStage();
+    cap.textContent = caption || alt || '';
+    state.mediaType = type;
+
+    if (type === 'video') {
+      const video = document.createElement('video');
+      video.className = 'lightbox-video';
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      video.src = src;
+      stage.appendChild(video);
+    } else {
+      const shell = document.createElement('div');
+      shell.className = 'lightbox-shell';
+      shell.style.setProperty('--zoom', '1');
+      shell.style.setProperty('--pan-x', '0px');
+      shell.style.setProperty('--pan-y', '0px');
+      shell.style.setProperty('--fit-width', 'min(96vw, 1280px)');
+      shell.style.setProperty('--fit-height', 'min(84vh, 84vh)');
+      shell.tabIndex = 0;
+
+      const img = document.createElement('img');
+      img.className = 'lightbox-image zoomable';
+      img.src = src;
+      img.alt = alt || '';
+      img.draggable = false;
+      shell.appendChild(img);
+      stage.appendChild(shell);
+      state.shell = shell;
+
+      const fitToViewport = () => {
+        const maxWidth = Math.min(window.innerWidth * 0.96, 1280);
+        const maxHeight = Math.min(window.innerHeight * 0.72, 900);
+        const scale = clamp(Math.min(maxWidth / img.naturalWidth, maxHeight / img.naturalHeight), 0.1, 1);
+        shell.style.setProperty('--fit-width', `${Math.round(img.naturalWidth * scale)}px`);
+        shell.style.setProperty('--fit-height', `${Math.round(img.naturalHeight * scale)}px`);
+        state.zoom = 1;
+        state.panX = 0;
+        state.panY = 0;
+        applyZoom();
+      };
+
+      if (img.complete) {
+        requestAnimationFrame(fitToViewport);
+      } else {
+        img.addEventListener('load', () => requestAnimationFrame(fitToViewport), { once: true });
+      }
+
+      const wheelZoom = (e) => {
+        if (!e.ctrlKey && !e.metaKey) return;
+        e.preventDefault();
+        const direction = e.deltaY > 0 ? -1 : 1;
+        const factor = direction > 0 ? 1.12 : 0.89;
+        const nextZoom = clamp(state.zoom * factor, 1, 5);
+        zoomAt(nextZoom, e.clientX, e.clientY);
+      };
+
+      const pointerDown = (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        shell.setPointerCapture(e.pointerId);
+        state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (state.pointers.size === 2) {
+          const [a, b] = [...state.pointers.values()];
+          state.pinchStart = {
+            distance: Math.hypot(b.x - a.x, b.y - a.y) || 1,
+            zoom: state.zoom,
+            panX: state.panX,
+            panY: state.panY,
+            midpoint: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
+            rect: shell.getBoundingClientRect(),
+          };
+          state.dragPointerId = null;
+          state.dragStart = null;
+          return;
+        }
+
+        if (state.zoom > 1) {
+          state.dragPointerId = e.pointerId;
+          state.dragStart = { x: e.clientX, y: e.clientY, panX: state.panX, panY: state.panY };
+        }
+      };
+
+      const pointerMove = (e) => {
+        if (!state.pointers.has(e.pointerId)) return;
+        state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (state.pointers.size >= 2 && state.pinchStart) {
+          const [a, b] = [...state.pointers.values()];
+          const distance = Math.hypot(b.x - a.x, b.y - a.y) || state.pinchStart.distance;
+          const nextZoom = clamp(state.pinchStart.zoom * (distance / state.pinchStart.distance), 1, 5);
+          const midpoint = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+          const rect = shell.getBoundingClientRect();
+          const startDx = state.pinchStart.midpoint.x - (state.pinchStart.rect.left + state.pinchStart.rect.width / 2);
+          const startDy = state.pinchStart.midpoint.y - (state.pinchStart.rect.top + state.pinchStart.rect.height / 2);
+          const midDx = midpoint.x - (rect.left + rect.width / 2);
+          const midDy = midpoint.y - (rect.top + rect.height / 2);
+          const ratio = nextZoom / state.pinchStart.zoom;
+          state.zoom = nextZoom;
+          state.panX = state.pinchStart.panX + midDx * (1 - ratio) + (midDx - startDx);
+          state.panY = state.pinchStart.panY + midDy * (1 - ratio) + (midDy - startDy);
+          clampPan();
+          applyZoom();
+          return;
+        }
+
+        if (state.zoom > 1 && state.dragPointerId === e.pointerId && state.dragStart) {
+          state.panX = state.dragStart.panX + (e.clientX - state.dragStart.x);
+          state.panY = state.dragStart.panY + (e.clientY - state.dragStart.y);
+          clampPan();
+          applyZoom();
+        }
+      };
+
+      const endPointer = (e) => {
+        state.pointers.delete(e.pointerId);
+        if (state.pointers.size < 2) state.pinchStart = null;
+        if (state.pointers.size === 0) {
+          state.dragPointerId = null;
+          state.dragStart = null;
+        }
+      };
+
+      shell.addEventListener('wheel', wheelZoom, { passive: false });
+      shell.addEventListener('pointerdown', pointerDown);
+      shell.addEventListener('pointermove', pointerMove);
+      shell.addEventListener('pointerup', endPointer);
+      shell.addEventListener('pointercancel', endPointer);
+      shell.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        const nextZoom = state.zoom > 1.01 ? 1 : 2.5;
+        if (nextZoom === 1) {
+          state.zoom = 1;
+          state.panX = 0;
+          state.panY = 0;
+          applyZoom();
+        } else {
+          zoomAt(nextZoom, e.clientX, e.clientY);
+        }
+      });
+      shell.addEventListener('contextmenu', (e) => e.preventDefault());
+      applyZoom();
+    }
+
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('lightbox-open');
+    renderCounter();
+    setNavState();
+  };
+
+  const close = () => {
+    const triggerToRestore = state.lastTrigger;
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('lightbox-open');
+    clearStage();
+    cap.textContent = '';
+    counter.textContent = '';
+    state.currentIndex = -1;
+    setNavState();
+    if (triggerToRestore) triggerToRestore.focus({ preventScroll: true });
+  };
+
+  const go = (delta) => {
+    if (state.currentIndex < 0) return;
+    if (state.mediaType === 'image' && state.zoom > 1.01) return;
+    const nextIndex = state.currentIndex + delta;
+    if (nextIndex < 0 || nextIndex >= triggers.length) return;
+    open(nextIndex);
+  };
+
+  triggers.forEach((trigger, index) => {
+    trigger.addEventListener('click', () => open(index));
+  });
+
+  prevBtn.addEventListener('click', () => go(-1));
+  nextBtn.addEventListener('click', () => go(1));
+  closeEls.forEach((el) => el.addEventListener('click', close));
+
+  document.addEventListener('keydown', (e) => {
+    if (modal.hidden) return;
+    if (e.key === 'Escape') close();
+    if (state.mediaType === 'image' && state.zoom > 1.01) {
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        zoomAt(clamp(state.zoom * 1.1, 1, 5), window.innerWidth / 2, window.innerHeight / 2);
+      }
+      if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        const nextZoom = clamp(state.zoom / 1.1, 1, 5);
+        if (nextZoom === 1) {
+          state.zoom = 1;
+          state.panX = 0;
+          state.panY = 0;
+          applyZoom();
+        } else {
+          zoomAt(nextZoom, window.innerWidth / 2, window.innerHeight / 2);
+        }
+      }
+      return;
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      go(-1);
+    }
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      go(1);
+    }
+  });
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+  dialog.addEventListener('touchstart', (e) => {
+    if (state.mediaType === 'image' && state.zoom > 1.01) return;
+    const touch = e.changedTouches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+  }, { passive: true });
+
+  dialog.addEventListener('touchend', (e) => {
+    if (state.mediaType === 'image' && state.zoom > 1.01) return;
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX;
+    const deltaY = touch.clientY - touchStartY;
+    if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+    if (deltaX < 0) go(1);
+    else go(-1);
+  }, { passive: true });
+})();
+</script>
 </body>
 </html>
